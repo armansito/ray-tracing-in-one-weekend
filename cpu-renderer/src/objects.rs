@@ -1,4 +1,4 @@
-use crate::algebra::{Point3, Vec3, Ray};
+use crate::algebra::{Point3, Ray, Vec3};
 
 pub struct HitResult {
     pub point: Point3,
@@ -10,7 +10,7 @@ pub struct HitResult {
     ///
     /// This vector is always of unit length.
     pub normal: Vec3,
-    
+
     /// The interpolation distance along the input ray that results in `point`.
     pub t: f32,
 
@@ -33,7 +33,9 @@ impl Hittable for Vec<Box<dyn Hittable + '_>> {
     fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitResult> {
         let mut nearest_hit: Option<HitResult> = None;
         for entry in self.iter() {
-            if let Some(hit) = entry.bounded_hit(ray, t_min, nearest_hit.as_ref().map_or(t_max, |h| h.t)) {
+            if let Some(hit) =
+                entry.bounded_hit(ray, t_min, nearest_hit.as_ref().map_or(t_max, |h| h.t))
+            {
                 nearest_hit = Some(hit);
             }
         }
@@ -51,9 +53,9 @@ impl Hittable for Sphere {
         let oc = ray.origin - self.center;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(&ray.direction);
-        let c = oc.length_squared() - self.radius*self.radius;
+        let c = oc.length_squared() - self.radius * self.radius;
 
-        let discriminant = half_b*half_b - a*c;
+        let discriminant = half_b * half_b - a * c;
         if discriminant < 0.0 {
             return None;
         }
@@ -76,12 +78,7 @@ impl Hittable for Sphere {
         let point = ray.at(root);
         let normal = (point - self.center) / self.radius;
         let (is_front_face, normal) = align_face_normal(ray, &normal);
-        Some(HitResult {
-            point,
-            normal,
-            t: root,
-            is_front_face,
-        })
+        Some(HitResult { point, normal, t: root, is_front_face })
     }
 }
 

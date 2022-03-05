@@ -9,7 +9,7 @@ mod color;
 mod objects;
 
 use crate::{
-    algebra::{Point3, Vec3, Ray},
+    algebra::{Point3, Ray, Vec3},
     color::RgbFloat,
     objects::{Hittable, Sphere},
 };
@@ -24,10 +24,7 @@ fn ray_color(ray: &Ray, scene: &Scene) -> RgbFloat {
     // Paint a blue-white gradient background if no objects were intersected.
     let dir = ray.direction.normalized();
     let t = 0.5 * (dir.y() + 1.0);
-    RgbFloat(
-        (1.0 - t) * RgbFloat::new(1.0, 1.0, 1.0).0 +
-        t * RgbFloat::new(0.5, 0.7, 1.0).0
-    )
+    RgbFloat((1.0 - t) * RgbFloat::new(1.0, 1.0, 1.0).0 + t * RgbFloat::new(0.5, 0.7, 1.0).0)
 }
 
 fn main() -> Result<()> {
@@ -38,14 +35,8 @@ fn main() -> Result<()> {
 
     // Scene
     let mut scene: Scene = Vec::new();
-    scene.push(Box::new(Sphere {
-        center: Point3::new(0.0, 0.0, -1.0),
-        radius: 0.5,
-    }));
-    scene.push(Box::new(Sphere {
-        center: Point3::new(0.0, -100.5, -1.0),
-        radius: 100.0,
-    }));
+    scene.push(Box::new(Sphere { center: Point3::new(0.0, 0.0, -1.0), radius: 0.5 }));
+    scene.push(Box::new(Sphere { center: Point3::new(0.0, -100.5, -1.0), radius: 100.0 }));
 
     // Camera
     const VIEWPORT_HEIGHT: f32 = 2.0;
@@ -56,7 +47,7 @@ fn main() -> Result<()> {
     let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
     let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
     let lower_left_corner: Point3 =
-            origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
 
     // Render
     let mut img = RgbImage::new(WIDTH, HEIGHT);
