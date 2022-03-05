@@ -59,6 +59,16 @@ impl ops::Add for Float3 {
     }
 }
 
+impl ops::Add<f32> for Float3 {
+    type Output = Self;
+
+    fn add(self, rhs: f32) -> Self::Output {
+        Self {
+            data: [self.x() + rhs, self.y() + rhs, self.z() + rhs],
+        }
+    }
+}
+
 impl ops::AddAssign for Float3 {
     fn add_assign(&mut self, rhs: Self) {
         self.data[0] += rhs.data[0];
@@ -67,11 +77,11 @@ impl ops::AddAssign for Float3 {
     }
 }
 
-impl ops::Neg for Float3 {
-    type Output = Self;
+impl ops::Neg for &Float3 {
+    type Output = Float3;
 
-    fn neg(self) -> Self::Output {
-        Self {
+    fn neg(self) -> Float3 {
+        Float3 {
             data: [-self.x(), -self.y(), -self.z()],
         }
     }
@@ -143,6 +153,7 @@ pub struct Ray {
 
 impl Ray {
     /// Constructs a ray with a normalized direction vector.
+    #[allow(dead_code)]
     pub fn with_unit_direction(origin: &Point3, direction: &Vec3) -> Ray {
         Ray {
             origin: *origin,

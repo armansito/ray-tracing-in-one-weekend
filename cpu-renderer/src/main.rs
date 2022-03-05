@@ -6,27 +6,22 @@ use {
 
 mod algebra;
 mod color;
+mod objects;
 
 use crate::{
     algebra::{Point3, Vec3, Ray},
     color::RgbFloat,
+    objects::{Hittable, Sphere},
 };
 
-fn hit_sphere(center: &Point3, radius: f32, ray: &Ray) -> bool {
-    let oc = ray.origin - *center;
-    let a = ray.direction.dot(&ray.direction);
-    let b = 2.0 * oc.dot(&ray.direction);
-    let c = oc.dot(&oc) - radius*radius;
-    let discriminant = b*b - 4.0*a*c;
-    discriminant > 0.0
-}
+type Scene = Vec<Box<dyn Hittable>>;
 
-fn ray_color(ray: &Ray) -> RgbFloat {
-    // Intersect a unit sphere that is unit length away from the origin along the -Z axis.
-    if hit_sphere(&Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return RgbFloat::new(1.0, 0.0, 0.0);
+fn ray_color(ray: &Ray, scene: &Scene) -> RgbFloat {
+    if let Some(hit) = scene.hit(ray) {
+        return RgbFloat(0.5 * (hit.normal + 1.0));
     }
 
+    // Paint a blue-white gradient background if no objects were intersected.
     let dir = ray.direction.normalized();
     let t = 0.5 * (dir.y() + 1.0);
     RgbFloat(
@@ -38,8 +33,19 @@ fn ray_color(ray: &Ray) -> RgbFloat {
 fn main() -> Result<()> {
     // Image
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
-    const HEIGHT: u32 = 400;
+    const HEIGHT: u32 = 600;
     const WIDTH: u32 = ((HEIGHT as f32) * ASPECT_RATIO) as u32;
+
+    // Scene
+    let mut scene: Scene = Vec::new();
+    scene.push(Box::new(Sphere {
+        center: Point3::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+    }));
+    scene.push(Box::new(Sphere {
+        center: Point3::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+    }));
 
     // Camera
     const VIEWPORT_HEIGHT: f32 = 2.0;
@@ -65,7 +71,7 @@ fn main() -> Result<()> {
                 origin,
                 direction: lower_left_corner + u * horizontal + v * vertical - origin,
             };
-            let color = ray_color(&ray);
+            let color = ray_color(&ray, &scene);
             img.put_pixel(col, HEIGHT - row - 1, color.into());
         }
     }
