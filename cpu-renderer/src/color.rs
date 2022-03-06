@@ -50,10 +50,32 @@ impl std::ops::AddAssign for RgbFloat {
     }
 }
 
+impl std::ops::Mul<f32> for RgbFloat {
+    type Output = Self;
+
+    fn mul(self, rhs: f32) -> Self::Output {
+        RgbFloat(self.0 * rhs)
+    }
+}
+
+impl std::ops::Mul<RgbFloat> for f32 {
+    type Output = RgbFloat;
+
+    fn mul(self, rhs: RgbFloat) -> Self::Output {
+        RgbFloat(rhs.0 * self)
+    }
+}
+
 impl std::ops::Div<f32> for RgbFloat {
     type Output = Self;
 
     fn div(self, rhs: f32) -> Self {
         RgbFloat(self.0 / rhs)
+    }
+}
+
+impl std::ops::DivAssign<f32> for RgbFloat {
+    fn div_assign(&mut self, rhs: f32) {
+        self.0 /= rhs
     }
 }

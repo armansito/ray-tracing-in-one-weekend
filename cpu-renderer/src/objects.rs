@@ -18,13 +18,17 @@ pub struct HitResult {
     pub is_front_face: bool,
 }
 
+/// Ignore nearby intersections that are closer to the ray origin than this factor. This helps
+/// prevent self-intersections
+const EPSILON: f32 = 0.001;
+
 pub trait Hittable {
     /// Find and return the closest intersection point along the ray within [t_max, t_max].
     fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitResult>;
 
     /// Find and return the closest intersection point along the ray in front of its origin.
     fn hit(&self, ray: &Ray) -> Option<HitResult> {
-        self.bounded_hit(ray, 0.0, f32::INFINITY)
+        self.bounded_hit(ray, EPSILON, f32::INFINITY)
     }
 }
 
@@ -86,7 +90,7 @@ impl Hittable for Sphere {
 // incident ray. Returns the transformed normal vector and whether or not the ray intersected the
 // surface from the front or back.
 fn align_face_normal(ray: &Ray, outward_normal: &Vec3) -> (bool, Vec3) {
-    let is_front = ray.direction.dot(outward_normal) < 0.0;
+    let is_front = ray.direction.dot(outward_normal) <= 0.0;
     let normal = if is_front { *outward_normal } else { -outward_normal };
     (is_front, normal)
 }
