@@ -1,15 +1,18 @@
 use {
     anyhow::{Context, Result},
     image::RgbImage,
+    rand::distributions::{Distribution, Uniform},
     std::io::{self, Write},
 };
 
 mod algebra;
+mod camera;
 mod color;
 mod objects;
 
 use crate::{
-    algebra::{Point3, Ray, Vec3},
+    algebra::{Point3, Ray},
+    camera::Camera,
     color::RgbFloat,
     objects::{Hittable, Sphere},
 };
@@ -32,6 +35,7 @@ fn main() -> Result<()> {
     const ASPECT_RATIO: f32 = 16.0 / 9.0;
     const HEIGHT: u32 = 600;
     const WIDTH: u32 = ((HEIGHT as f32) * ASPECT_RATIO) as u32;
+    const SAMPLES_PER_PIXEL: u32 = 50;
 
     // Scene
     let mut scene: Scene = Vec::new();
@@ -39,31 +43,26 @@ fn main() -> Result<()> {
     scene.push(Box::new(Sphere { center: Point3::new(0.0, -100.5, -1.0), radius: 100.0 }));
 
     // Camera
-    const VIEWPORT_HEIGHT: f32 = 2.0;
-    const VIEWPORT_WIDTH: f32 = VIEWPORT_HEIGHT * ASPECT_RATIO;
-    const FOCAL_LENGTH: f32 = 1.0;
-
-    let origin = Point3::new(0.0, 0.0, 0.0);
-    let horizontal = Vec3::new(VIEWPORT_WIDTH, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, VIEWPORT_HEIGHT, 0.0);
-    let lower_left_corner: Point3 =
-        origin - horizontal / 2.0 - vertical / 2.0 - Vec3::new(0.0, 0.0, FOCAL_LENGTH);
+    let camera = Camera::new(Point3::new(0.0, 0.0, 0.0), ASPECT_RATIO, 1.0);
 
     // Render
     let mut img = RgbImage::new(WIDTH, HEIGHT);
+    let mut rng = rand::thread_rng();
+    let dist = Uniform::from(0.0..1.0);
+
     for row in (0..HEIGHT).rev() {
         print!("\rScanlines remaining: {}", row);
         io::stdout().flush()?;
-
         for col in 0..WIDTH {
-            let u = (col as f32) / (WIDTH as f32 - 1.0);
-            let v = (row as f32) / (HEIGHT as f32 - 1.0);
-            let ray = Ray {
-                origin,
-                direction: lower_left_corner + u * horizontal + v * vertical - origin,
-            };
-            let color = ray_color(&ray, &scene);
-            img.put_pixel(col, HEIGHT - row - 1, color.into());
+            let mut pixel_color = RgbFloat::black();
+
+            for _ in 0..SAMPLES_PER_PIXEL {
+                let u = ((col as f32) + dist.sample(&mut rng)) / (WIDTH as f32 - 1.0);
+                let v = ((row as f32) + dist.sample(&mut rng)) / (HEIGHT as f32 - 1.0);
+                let ray = camera.ray(u, v);
+                pixel_color += ray_color(&ray, &scene);
+            }
+            img.put_pixel(col, HEIGHT - row - 1, (pixel_color / (SAMPLES_PER_PIXEL as f32)).into());
         }
     }
 

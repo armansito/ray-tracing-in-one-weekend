@@ -8,6 +8,10 @@ impl RgbFloat {
         RgbFloat(Float3 { data: [r, g, b] })
     }
 
+    pub fn black() -> RgbFloat {
+        RgbFloat::new(0.0, 0.0, 0.0)
+    }
+
     #[inline(always)]
     pub fn r(&self) -> f32 {
         self.0.x()
@@ -27,9 +31,9 @@ impl RgbFloat {
 impl convert::From<&RgbFloat> for Rgb<u8> {
     fn from(src: &RgbFloat) -> Self {
         Self([
-            (255.999 * src.r().clamp(0.0, 1.0)) as u8,
-            (255.999 * src.g().clamp(0.0, 1.0)) as u8,
-            (255.999 * src.b().clamp(0.0, 1.0)) as u8,
+            (256.0 * src.r().clamp(0.0, 0.999)) as u8,
+            (256.0 * src.g().clamp(0.0, 0.999)) as u8,
+            (256.0 * src.b().clamp(0.0, 0.999)) as u8,
         ])
     }
 }
@@ -37,5 +41,19 @@ impl convert::From<&RgbFloat> for Rgb<u8> {
 impl convert::From<RgbFloat> for Rgb<u8> {
     fn from(src: RgbFloat) -> Self {
         Self::from(&src)
+    }
+}
+
+impl std::ops::AddAssign for RgbFloat {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0
+    }
+}
+
+impl std::ops::Div<f32> for RgbFloat {
+    type Output = Self;
+
+    fn div(self, rhs: f32) -> Self {
+        RgbFloat(self.0 / rhs)
     }
 }
