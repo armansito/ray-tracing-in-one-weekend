@@ -27,9 +27,7 @@ fn ray_color(ray: &Ray, scene: &Scene, rng: &mut Rng, depth: u32) -> RgbFloat {
     }
 
     if let Some(hit) = scene.hit(ray) {
-        let direction = hit.normal + rng.sample_unit_sphere();
-        let direction = direction.normalized();
-        let ray = Ray { origin: hit.point, direction };
+        let ray = Ray { origin: hit.point, direction: rng.sample_hemisphere(&hit.normal) };
         return 0.5 * ray_color(&ray, scene, rng, depth - 1);
     }
 

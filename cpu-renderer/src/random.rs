@@ -33,7 +33,16 @@ impl Rng {
     }
 
     /// Return a random point on the surface of a unit sphere centered at origin.
-    pub fn sample_unit_sphere(&mut self) -> Vec3 {
+    pub fn sample_sphere(&mut self) -> Vec3 {
         Vec3 { data: UnitSphere.sample(&mut self.rng) }
+    }
+
+    /// Return a random point on the urface of a unit hemisphere centered at origin, with its apex
+    /// aligned towards the given normal.
+    pub fn sample_hemisphere(&mut self, normal: &Vec3) -> Vec3 {
+        let vec = self.sample_sphere();
+
+        // Flip the vector if its not in the same hemisphere as the normal.
+        if vec.dot(normal) < 0.0 { -vec } else { vec }
     }
 }

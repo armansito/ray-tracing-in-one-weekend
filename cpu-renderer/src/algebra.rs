@@ -87,6 +87,14 @@ impl ops::Neg for &Float3 {
     }
 }
 
+impl ops::Neg for Float3 {
+    type Output = Self;
+
+    fn neg(self) -> Float3 {
+        Float3 { data: [-self.x(), -self.y(), -self.z()] }
+    }
+}
+
 impl ops::Sub for Float3 {
     type Output = Self;
 
