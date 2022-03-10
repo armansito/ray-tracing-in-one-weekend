@@ -16,7 +16,7 @@ mod scene;
 
 use crate::{
     algebra::{Point3, Ray},
-    camera::Camera,
+    camera::{Camera, CameraParams},
     color::RgbFloat,
     material::{Dielectric, Lambertian, Metal},
     random::Rng,
@@ -89,7 +89,13 @@ fn main() -> Result<()> {
     }));
 
     // Camera
-    let camera = Camera::new(Point3::new(0.0, 0.0, 0.0), ASPECT_RATIO, 1.0);
+    let camera = Camera::new(CameraParams {
+        origin: Point3::new(-2.0, 2.0, 1.0),
+        look_at: Point3::new(0.0, 0.0, -1.0),
+        up: Point3::new(0.0, 1.0, 0.0),
+        aspect_ratio: ASPECT_RATIO,
+        fov_y: 45_f32.to_radians(),
+    });
 
     // Render
     let mut img = RgbImage::new(WIDTH, HEIGHT);
