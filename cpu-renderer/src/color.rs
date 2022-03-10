@@ -1,11 +1,19 @@
 use crate::algebra::Float3;
-use {image::Rgb, std::convert};
+use {
+    image::Rgb,
+    std::{convert, ops},
+};
 
+#[derive(Debug, Copy, Clone)]
 pub struct RgbFloat(pub Float3);
 
 impl RgbFloat {
     pub fn new(r: f32, g: f32, b: f32) -> RgbFloat {
         RgbFloat(Float3 { data: [r, g, b] })
+    }
+
+    pub fn gray(value: f32) -> RgbFloat {
+        RgbFloat::new(value, value, value)
     }
 
     pub fn black() -> RgbFloat {
@@ -50,32 +58,7 @@ impl std::ops::AddAssign for RgbFloat {
     }
 }
 
-impl std::ops::Mul<f32> for RgbFloat {
-    type Output = Self;
-
-    fn mul(self, rhs: f32) -> Self::Output {
-        RgbFloat(self.0 * rhs)
-    }
-}
-
-impl std::ops::Mul<RgbFloat> for f32 {
-    type Output = RgbFloat;
-
-    fn mul(self, rhs: RgbFloat) -> Self::Output {
-        RgbFloat(rhs.0 * self)
-    }
-}
-
-impl std::ops::Div<f32> for RgbFloat {
-    type Output = Self;
-
-    fn div(self, rhs: f32) -> Self {
-        RgbFloat(self.0 / rhs)
-    }
-}
-
-impl std::ops::DivAssign<f32> for RgbFloat {
-    fn div_assign(&mut self, rhs: f32) {
-        self.0 /= rhs
-    }
-}
+impl_op_ex!(* |lhs: &RgbFloat, rhs: &RgbFloat| -> RgbFloat { RgbFloat(lhs.0 * rhs.0) });
+impl_op_ex_commutative!(* |lhs: &RgbFloat, rhs: f32| -> RgbFloat { RgbFloat(lhs.0 * rhs) });
+impl_op_ex!(/ |lhs: &RgbFloat, rhs: f32| -> RgbFloat { RgbFloat(lhs.0 / rhs) });
+impl_op_ex!(/= |lhs: &mut RgbFloat, rhs: f32| { lhs.0 /= rhs });

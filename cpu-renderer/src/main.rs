@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate impl_ops;
+
 use {
     anyhow::{Context, Result},
     image::RgbImage,
@@ -7,28 +10,30 @@ use {
 mod algebra;
 mod camera;
 mod color;
-mod objects;
+mod material;
 mod random;
+mod scene;
 
 use crate::{
     algebra::{Point3, Ray},
     camera::Camera,
     color::RgbFloat,
-    objects::{Hittable, Sphere},
+    material::{Lambertian, Metal},
     random::Rng,
+    scene::{Hittable, Scene, Sphere},
 };
 
-type Scene = Vec<Box<dyn Hittable>>;
-
-fn ray_color(ray: &Ray, scene: &Scene, rng: &mut Rng, depth: u32) -> RgbFloat {
+fn ray_color(ray: &Ray, scene: &Scene, rng: &Rng, depth: u32) -> RgbFloat {
     // If we've exceeded the ray bounce limit, no more light is gathered.
     if depth == 0 {
         return RgbFloat::black();
     }
 
     if let Some(hit) = scene.hit(ray) {
-        let ray = Ray { origin: hit.point, direction: rng.sample_hemisphere(&hit.normal) };
-        return 0.5 * ray_color(&ray, scene, rng, depth - 1);
+        return match hit.material.scatter(ray, &hit) {
+            None => RgbFloat::black(),
+            Some((attenuation, ray)) => attenuation * ray_color(&ray, scene, rng, depth - 1),
+        };
     }
 
     // Paint a blue-white gradient background if no objects were intersected.
@@ -46,16 +51,39 @@ fn main() -> Result<()> {
     const MAX_DEPTH: u32 = 50;
 
     // Scene
+    let ground = Lambertian::new(RgbFloat::new(0.8, 0.8, 0.0));
+    let middle = Lambertian::new(RgbFloat::new(0.7, 0.3, 0.3));
+    let left = Metal::new(RgbFloat::new(0.8, 0.8, 0.8), 0.2);
+    let right = Metal::new(RgbFloat::new(0.8, 0.6, 0.2), 1.0);
+
     let mut scene: Scene = Vec::new();
-    scene.push(Box::new(Sphere { center: Point3::new(0.0, 0.0, -1.0), radius: 0.5 }));
-    scene.push(Box::new(Sphere { center: Point3::new(0.0, -100.5, -1.0), radius: 100.0 }));
+    scene.push(Box::new(Sphere {
+        center: Point3::new(0.0, -100.5, -1.0),
+        radius: 100.0,
+        material: ground,
+    }));
+    scene.push(Box::new(Sphere {
+        center: Point3::new(0.0, 0.0, -1.0),
+        radius: 0.5,
+        material: middle,
+    }));
+    scene.push(Box::new(Sphere {
+        center: Point3::new(-1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: left,
+    }));
+    scene.push(Box::new(Sphere {
+        center: Point3::new(1.0, 0.0, -1.0),
+        radius: 0.5,
+        material: right,
+    }));
 
     // Camera
     let camera = Camera::new(Point3::new(0.0, 0.0, 0.0), ASPECT_RATIO, 1.0);
 
     // Render
     let mut img = RgbImage::new(WIDTH, HEIGHT);
-    let mut rng = Rng::new();
+    let rng = Rng::new();
 
     for row in (0..HEIGHT).rev() {
         print!("\rScanlines remaining: {}", row);
@@ -67,7 +95,7 @@ fn main() -> Result<()> {
                 let u = ((col as f32) + rng.random_float()) / (WIDTH as f32 - 1.0);
                 let v = ((row as f32) + rng.random_float()) / (HEIGHT as f32 - 1.0);
                 let ray = camera.ray(u, v);
-                pixel_color += ray_color(&ray, &scene, &mut rng, MAX_DEPTH);
+                pixel_color += ray_color(&ray, &scene, &rng, MAX_DEPTH);
             }
 
             // Divide the color by the number of samples and gamma-correct for gamma=2.0.

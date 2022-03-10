@@ -1,6 +1,11 @@
-use crate::algebra::{Point3, Ray, Vec3};
+use crate::{
+    algebra::{Point3, Ray, Vec3},
+    material::MaterialRef,
+};
 
-pub struct HitResult {
+pub type Scene = Vec<Box<dyn Hittable>>;
+
+pub struct HitRecord {
     pub point: Point3,
 
     /// The normal vector here is defined to be always against the incident ray, i.e the angle
@@ -10,6 +15,9 @@ pub struct HitResult {
     ///
     /// This vector is always of unit length.
     pub normal: Vec3,
+
+    /// Surface properties at the point of intersection.
+    pub material: MaterialRef,
 
     /// The interpolation distance along the input ray that results in `point`.
     pub t: f32,
@@ -24,18 +32,18 @@ const EPSILON: f32 = 0.001;
 
 pub trait Hittable {
     /// Find and return the closest intersection point along the ray within [t_max, t_max].
-    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitResult>;
+    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 
     /// Find and return the closest intersection point along the ray in front of its origin.
-    fn hit(&self, ray: &Ray) -> Option<HitResult> {
+    fn hit(&self, ray: &Ray) -> Option<HitRecord> {
         self.bounded_hit(ray, EPSILON, f32::INFINITY)
     }
 }
 
 /// The hittable trait is implemented for a dynamic list of hittables.
 impl Hittable for Vec<Box<dyn Hittable + '_>> {
-    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitResult> {
-        let mut nearest_hit: Option<HitResult> = None;
+    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
+        let mut nearest_hit: Option<HitRecord> = None;
         for entry in self.iter() {
             if let Some(hit) =
                 entry.bounded_hit(ray, t_min, nearest_hit.as_ref().map_or(t_max, |h| h.t))
@@ -50,10 +58,11 @@ impl Hittable for Vec<Box<dyn Hittable + '_>> {
 pub struct Sphere {
     pub center: Point3,
     pub radius: f32,
+    pub material: MaterialRef,
 }
 
 impl Hittable for Sphere {
-    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitResult> {
+    fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = ray.direction.length_squared();
         let half_b = oc.dot(&ray.direction);
@@ -82,7 +91,7 @@ impl Hittable for Sphere {
         let point = ray.at(root);
         let normal = (point - self.center) / self.radius;
         let (is_front_face, normal) = align_face_normal(ray, &normal);
-        Some(HitResult { point, normal, t: root, is_front_face })
+        Some(HitRecord { point, normal, material: self.material.clone(), t: root, is_front_face })
     }
 }
 
