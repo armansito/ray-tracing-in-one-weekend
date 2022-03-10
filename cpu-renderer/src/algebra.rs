@@ -54,6 +54,15 @@ impl Float3 {
         self - 2.0 * self.dot(normal) * normal
     }
 
+    /// `refraction_ratio` equals n / n_prime, where n is the refractive index of the
+    /// incident ray's environment and n_prime is that of the transmitting environment.
+    pub fn refract(&self, normal: &Float3, refraction_ratio: f32) -> Float3 {
+        let cos_theta = (-self).dot(normal).min(1.0);
+        let r_out_perp = refraction_ratio * (self + cos_theta * normal);
+        let r_out_parallel = -(1.0 - r_out_perp.length_squared()).abs().sqrt() * normal;
+        r_out_perp + r_out_parallel
+    }
+
     pub fn normalized(&self) -> Float3 {
         *self / self.length()
     }

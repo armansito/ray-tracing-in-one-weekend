@@ -20,6 +20,10 @@ impl RgbFloat {
         RgbFloat::new(0.0, 0.0, 0.0)
     }
 
+    pub fn white() -> RgbFloat {
+        RgbFloat::new(1.0, 1.0, 1.0)
+    }
+
     #[inline(always)]
     pub fn r(&self) -> f32 {
         self.0.x()

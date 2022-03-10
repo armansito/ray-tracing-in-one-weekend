@@ -18,7 +18,7 @@ use crate::{
     algebra::{Point3, Ray},
     camera::Camera,
     color::RgbFloat,
-    material::{Lambertian, Metal},
+    material::{Dielectric, Lambertian, Metal},
     random::Rng,
     scene::{Hittable, Scene, Sphere},
 };
@@ -51,31 +51,41 @@ fn main() -> Result<()> {
     const MAX_DEPTH: u32 = 50;
 
     // Scene
-    let ground = Lambertian::new(RgbFloat::new(0.8, 0.8, 0.0));
-    let middle = Lambertian::new(RgbFloat::new(0.7, 0.3, 0.3));
-    let left = Metal::new(RgbFloat::new(0.8, 0.8, 0.8), 0.2);
-    let right = Metal::new(RgbFloat::new(0.8, 0.6, 0.2), 1.0);
-
     let mut scene: Scene = Vec::new();
+
+    // Ground
     scene.push(Box::new(Sphere {
         center: Point3::new(0.0, -100.5, -1.0),
         radius: 100.0,
-        material: ground,
+        material: Lambertian::new(RgbFloat::new(0.8, 0.8, 0.0)),
     }));
+
+    // Middle sphere
     scene.push(Box::new(Sphere {
         center: Point3::new(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: middle,
+        material: Lambertian::new(RgbFloat::new(0.7, 0.3, 0.3)),
     }));
+
+    // Left glass sphere, outer surface
+    let dielectric = Dielectric::new(1.5);
     scene.push(Box::new(Sphere {
         center: Point3::new(-1.0, 0.0, -1.0),
         radius: 0.5,
-        material: left,
+        material: dielectric.clone(),
     }));
+    // Left glass sphere, inner surface.
+    scene.push(Box::new(Sphere {
+        center: Point3::new(-1.0, 0.0, -1.0),
+        radius: -0.45,
+        material: dielectric,
+    }));
+
+    // Right metal sphere.
     scene.push(Box::new(Sphere {
         center: Point3::new(1.0, 0.0, -1.0),
         radius: 0.5,
-        material: right,
+        material: Metal::new(RgbFloat::new(0.8, 0.6, 0.2), 0.0),
     }));
 
     // Camera

@@ -51,3 +51,46 @@ impl Material for Metal {
         Some((self.albedo, Ray { origin: surface.point, direction: scattered }))
     }
 }
+
+/// Glass-like material.
+pub struct Dielectric {
+    index_of_refraction: f32,
+    rng: Rng,
+}
+
+impl Dielectric {
+    pub fn new(index_of_refraction: f32) -> Ref<dyn Material> {
+        Rc::new(Box::new(Dielectric { index_of_refraction, rng: Rng::new() }))
+    }
+}
+
+impl Material for Dielectric {
+    fn scatter(&self, incident: &Ray, surface: &HitRecord) -> Option<(RgbFloat, Ray)> {
+        let refraction_ratio = if surface.is_front_face {
+            1.0 / self.index_of_refraction
+        } else {
+            self.index_of_refraction
+        };
+
+        let incident = incident.direction.normalized();
+        let cos_theta = (-incident).dot(&surface.normal).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = refraction_ratio * sin_theta > 1.0;
+        let direction = if cannot_refract
+            || reflectance(cos_theta, refraction_ratio) > self.rng.random_float()
+        {
+            incident.reflect(&surface.normal)
+        } else {
+            incident.refract(&surface.normal, refraction_ratio)
+        };
+        Some((RgbFloat::white(), Ray { origin: surface.point, direction }))
+    }
+}
+
+fn reflectance(cosine: f32, refraction_ratio: f32) -> f32 {
+    // Use Schlick's approximation for reflectance:
+    let r0 = (1.0 - refraction_ratio) / (1.0 + refraction_ratio);
+    let r0 = r0 * r0;
+    r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+}

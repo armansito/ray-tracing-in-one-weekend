@@ -57,7 +57,11 @@ impl Hittable for Vec<Box<dyn Hittable + '_>> {
 
 pub struct Sphere {
     pub center: Point3,
+
+    /// A negative radius is legal and results in inverted surface normals (pointing towards the
+    /// center).
     pub radius: f32,
+
     pub material: MaterialRef,
 }
 
