@@ -15,18 +15,17 @@ pub type MaterialRef = Ref<dyn Material>;
 /// Lambertian diffuse material.
 pub struct Lambertian {
     albedo: RgbFloat,
-    rng: Rng,
 }
 
 impl Lambertian {
     pub fn new(albedo: RgbFloat) -> Ref<dyn Material> {
-        Rc::new(Box::new(Lambertian { albedo, rng: Rng::new() }))
+        Rc::new(Box::new(Lambertian { albedo }))
     }
 }
 
 impl Material for Lambertian {
     fn scatter(&self, _: &Ray, surface: &HitRecord) -> Option<(RgbFloat, Ray)> {
-        let scattered = self.rng.sample_hemisphere(&surface.normal);
+        let scattered = Rng::sample_hemisphere(&surface.normal);
         Some((self.albedo, Ray { origin: surface.point, direction: scattered }))
     }
 }
@@ -35,19 +34,18 @@ impl Material for Lambertian {
 pub struct Metal {
     albedo: RgbFloat,
     fuzz: f32,
-    rng: Rng,
 }
 
 impl Metal {
     pub fn new(albedo: RgbFloat, fuzz: f32) -> Ref<dyn Material> {
-        Rc::new(Box::new(Metal { albedo, fuzz: fuzz.clamp(0.0, 1.0), rng: Rng::new() }))
+        Rc::new(Box::new(Metal { albedo, fuzz: fuzz.clamp(0.0, 1.0) }))
     }
 }
 
 impl Material for Metal {
     fn scatter(&self, incident: &Ray, surface: &HitRecord) -> Option<(RgbFloat, Ray)> {
         let mirror = incident.direction.normalized().reflect(&surface.normal);
-        let scattered = mirror + self.fuzz * self.rng.sample_sphere();
+        let scattered = mirror + self.fuzz * Rng::sample_sphere();
         Some((self.albedo, Ray { origin: surface.point, direction: scattered }))
     }
 }

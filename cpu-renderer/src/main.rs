@@ -64,7 +64,7 @@ fn main() -> Result<()> {
     scene.push(Box::new(Sphere {
         center: Point3::new(0.0, 0.0, -1.0),
         radius: 0.5,
-        material: Lambertian::new(RgbFloat::new(0.7, 0.3, 0.3)),
+        material: Lambertian::new(RgbFloat::new(0.1, 0.2, 0.5)),
     }));
 
     // Left glass sphere, outer surface
@@ -89,12 +89,16 @@ fn main() -> Result<()> {
     }));
 
     // Camera
+    let origin = Point3::new(3.0, 3.0, 2.0);
+    let focus = Point3::new(0.0, 0.0, -1.0);
     let camera = Camera::new(CameraParams {
-        origin: Point3::new(-2.0, 2.0, 1.0),
-        look_at: Point3::new(0.0, 0.0, -1.0),
+        origin,
+        look_at: focus,
         up: Point3::new(0.0, 1.0, 0.0),
         aspect_ratio: ASPECT_RATIO,
-        fov_y: 45_f32.to_radians(),
+        fov_y: 20_f32.to_radians(),
+        aperture: 1.0,
+        focus_distance: (focus - origin).length(),
     });
 
     // Render
