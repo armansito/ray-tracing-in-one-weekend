@@ -20,13 +20,23 @@ impl Rng {
     }
 
     /// Return a random vector from a uniform distribution between 0.0 and 1.0.
-    #[allow(dead_code)]
     pub fn random_vec3(&self) -> Vec3 {
         let mut rng = rand::thread_rng();
         Vec3::new(
             self.uniform.sample(&mut rng),
             self.uniform.sample(&mut rng),
             self.uniform.sample(&mut rng),
+        )
+    }
+
+    /// Return a random vector with values within the given range.
+    pub fn random_vec3_in_range(min: f32, max: f32) -> Vec3 {
+        let mut rng = rand::thread_rng();
+        let uniform = Uniform::new_inclusive(min, max);
+        Vec3::new(
+            uniform.sample(&mut rng),
+            uniform.sample(&mut rng),
+            uniform.sample(&mut rng),
         )
     }
 

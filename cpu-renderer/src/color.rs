@@ -1,4 +1,4 @@
-use crate::algebra::Float3;
+use crate::{algebra::Float3, random::Rng};
 use {
     image::Rgb,
     std::{convert, ops},
@@ -22,6 +22,14 @@ impl RgbFloat {
 
     pub fn white() -> RgbFloat {
         RgbFloat::new(1.0, 1.0, 1.0)
+    }
+
+    pub fn random(rng: &Rng) -> RgbFloat {
+        RgbFloat(rng.random_vec3())
+    }
+
+    pub fn random_in_range(min: f32, max: f32) -> RgbFloat {
+        RgbFloat(Rng::random_vec3_in_range(min.clamp(0.0, 1.0), max.clamp(0.0, 1.0)))
     }
 
     #[inline(always)]
