@@ -42,8 +42,8 @@ Options:
 
 ## Images
 
-![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/images/final_scene.jpg)
+![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/cpu-renderer/images/final_scene.jpg)
 
-![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/images/three_balls.jpg)
+![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/cpu-renderer/images/three_balls.jpg)
 
-![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/images/three_balls_angle_view.jpg)
+![](https://raw.githubusercontent.com/armansito/ray-tracing-in-one-weekend/main/cpu-renderer/images/three_balls_angle_view.jpg)
