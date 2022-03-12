@@ -10,7 +10,7 @@ following third-party crates for a few things that are implemented directly in t
 
 - [images](https://crates.io/crates/image) to convert sRGB to the stored image format (in this case
   PPM)
-- [rand]((https://crates.io/crates/rand) and [rand_distr](https://crates.io/crates/rand_distr) to
+- [rand](https://crates.io/crates/rand) and [rand_distr](https://crates.io/crates/rand_distr) to
   sample from uniform distributions. I made use of the
   [UnitSphere](https://docs.rs/rand_distr/0.4.3/rand_distr/struct.UnitSphere.html) and
   [UnitDisc](https://docs.rs/rand_distr/0.4.3/rand_distr/struct.UnitDisc.html) utilities instead of
