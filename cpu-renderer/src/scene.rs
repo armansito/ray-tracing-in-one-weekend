@@ -1,3 +1,8 @@
+// Copyright (c) 2022 Arman Uguray
+//
+// Use of this source code is governed by the MIT License described
+// in the LICENSE file.
+
 use crate::{
     algebra::{Point3, Ray, Vec3},
     material::MaterialRef,
