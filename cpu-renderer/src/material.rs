@@ -4,11 +4,11 @@
 // in the LICENSE file.
 
 use crate::{algebra::Ray, color::RgbFloat, random::Rng, scene::HitRecord};
-use std::rc::Rc;
+use std::sync::Arc;
 
-type Ref<T> = Rc<Box<T>>;
+type Ref<T> = Arc<Box<T>>;
 
-pub trait Material {
+pub trait Material: Send + Sync {
     /// Scatter the given ray at the given surface. Returns a bounced ray and albedo that
     /// represents the attenuation factor for the outgoing radiance. Retuns `None` if incoming
     /// radiance is entirely absorbed.
@@ -24,7 +24,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(albedo: RgbFloat) -> Ref<dyn Material> {
-        Rc::new(Box::new(Lambertian { albedo }))
+        Arc::new(Box::new(Lambertian { albedo }))
     }
 }
 
@@ -43,7 +43,7 @@ pub struct Metal {
 
 impl Metal {
     pub fn new(albedo: RgbFloat, fuzz: f32) -> Ref<dyn Material> {
-        Rc::new(Box::new(Metal { albedo, fuzz: fuzz.clamp(0.0, 1.0) }))
+        Arc::new(Box::new(Metal { albedo, fuzz: fuzz.clamp(0.0, 1.0) }))
     }
 }
 
@@ -63,7 +63,7 @@ pub struct Dielectric {
 
 impl Dielectric {
     pub fn new(index_of_refraction: f32) -> Ref<dyn Material> {
-        Rc::new(Box::new(Dielectric { index_of_refraction, rng: Rng::new() }))
+        Arc::new(Box::new(Dielectric { index_of_refraction, rng: Rng::new() }))
     }
 }
 

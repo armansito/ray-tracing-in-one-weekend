@@ -35,7 +35,7 @@ pub struct HitRecord {
 /// prevent self-intersections
 const EPSILON: f32 = 0.001;
 
-pub trait Hittable {
+pub trait Hittable: Sync {
     /// Find and return the closest intersection point along the ray within [t_max, t_max].
     fn bounded_hit(&self, ray: &Ray, t_min: f32, t_max: f32) -> Option<HitRecord>;
 
