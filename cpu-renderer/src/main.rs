@@ -10,10 +10,7 @@ use {
     anyhow::{anyhow, Context, Result},
     argh::FromArgs,
     image::RgbImage,
-    std::{
-        str::FromStr,
-        sync::{Arc, Mutex},
-    },
+    std::str::FromStr,
 };
 
 mod algebra;
@@ -100,18 +97,18 @@ fn main() -> Result<()> {
     };
 
     // Render
-    let img = Arc::new(Mutex::new(RgbImage::new(width, height)));
+    let mut img = RgbImage::new(width, height);
     render::render_scene(
         &scene,
         &camera,
         &rng,
         args.max_bounces + 1,
         args.samples_per_pixel,
-        img.clone(),
+        &mut img,
     );
     println!("\nDone");
 
     // Save the image to a file
-    img.lock().unwrap().save("image.ppm").context("failed to write PPM image")?;
+    img.save("image.ppm").context("failed to write PPM image")?;
     Ok(())
 }
